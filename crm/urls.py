@@ -5,9 +5,9 @@ from . import views
 app_name = "crm"
 
 urlpatterns = [
-    path("", views.lead_list, name="home"),
-    path("create/", views.lead_create, name="lead-create"),
-    path("update/<int:pk>/", views.lead_update, name="lead-update"),
-    path("delete/<int:pk>/", views.lead_delete, name="lead-delete"),
-    path("detail/<int:pk>/", views.lead_detail, name="lead-detail"),
+    path("", views.LeadListView.as_view(), name="home"),
+    path("create/", views.LeadCreateView.as_view(), name="lead-create"),
+    path("update/<int:pk>/", views.LeadUpdateView.as_view(), name="lead-update"),
+    path("delete/<int:pk>/", views.LeadDeleteView.as_view(), name="lead-delete"),
+    path("detail/<int:pk>/", views.LeadDetailView.as_view(), name="lead-detail"),
 ]

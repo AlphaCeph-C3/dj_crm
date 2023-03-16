@@ -1,9 +1,33 @@
 from django.shortcuts import get_object_or_404, redirect, render
-from django.forms.models import model_to_dict
-from .forms import LeadForm, LeadModelForm
-from .models import Agent, Lead
+from django.urls import reverse
+from django.views.generic import (
+    CreateView,
+    DeleteView,
+    DetailView,
+    ListView,
+    TemplateView,
+    UpdateView,
+)
+
+from .forms import LeadModelForm
+from .models import Lead
 
 # Create your views here.
+
+
+class LandingPageView(TemplateView):
+    template_name = "crm/landing.html"
+
+
+def landing_page(request):
+    context = {}
+    return render(request, "crm/landing.html", context=context)
+
+
+class LeadListView(ListView):
+    template_name = "crm/lead_list.html"
+    queryset = Lead.objects.all()
+    context_object_name = "leads"
 
 
 def lead_list(request):
@@ -12,10 +36,24 @@ def lead_list(request):
     return render(request, "crm/lead_list.html", context=context)
 
 
+class LeadDetailView(DetailView):
+    template_name = "crm/lead_detail.html"
+    queryset = Lead.objects.all()
+    context_object_name = "lead"
+
+
 def lead_detail(request, pk):
     lead = get_object_or_404(Lead, pk=pk)
     context = {"lead": lead}
     return render(request, "crm/lead_detail.html", context)
+
+
+class LeadCreateView(CreateView):
+    template_name = "crm/lead_create.html"
+    form_class = LeadModelForm
+
+    def get_success_url(self):
+        return reverse("crm:home")
 
 
 def lead_create(request):
@@ -30,6 +68,15 @@ def lead_create(request):
         "form": form,
     }
     return render(request, "crm/lead_create.html", context)
+
+
+class LeadUpdateView(UpdateView):
+    template_name = "crm/lead_update.html"
+    queryset = Lead.objects.all()
+    form_class = LeadModelForm
+
+    def get_success_url(self):
+        return reverse("crm:home")
 
 
 def lead_update(request, pk):
@@ -48,51 +95,15 @@ def lead_update(request, pk):
     return render(request, "crm/lead_update.html", context)
 
 
+class LeadDeleteView(DeleteView):
+    template_name = "crm/lead_delete.html"
+    queryset = Lead.objects.all()
+
+    def get_success_url(self) -> str:
+        return reverse("crm:home")
+
+
 def lead_delete(request, pk):
     lead = Lead.objects.get(id=pk)
     lead.delete()
     return redirect("crm:home")
-
-
-# def lead_update(request, pk):
-#     lead = get_object_or_404(Lead, pk=pk)
-#     if request.method == "POST":
-#         form = LeadForm(request.POST)
-#         if form.is_valid():
-#             first_name = form.cleaned_data.get("first_name")
-#             last_name = form.cleaned_data.get("last_name")
-#             age = form.cleaned_data.get("age")
-#             lead.first_name = first_name
-#             lead.last_name = last_name
-#             lead.age = age
-#             lead.save()
-#             return redirect("crm:home")
-#     else:
-#         lead_data = {"first_name": lead.first_name, "last_name": lead.last_name, "age": lead.age}
-#         print(model_to_dict(lead))
-#         form = LeadForm(initial=lead_data)
-#     context = {
-#         "lead": lead,
-#         "form": form,
-#     }
-#     return render(request, "crm/lead_update.html", context)
-
-
-# def lead_create(request):
-#     if request.method == "POST":
-#         form = LeadForm(request.POST)
-#         if form.is_valid():
-#             first_name = form.cleaned_data.get("first_name")
-#             last_name = form.cleaned_data.get("last_name")
-#             age = form.cleaned_data.get("age")
-#             agent = Agent.objects.first()
-#             Lead.objects.create(
-#                 first_name=first_name, last_name=last_name, age=age, agent=agent
-#             )
-#             return redirect("crm:home")
-#     else:
-#         form = LeadForm()
-#     context = {
-#         "form": form,
-#     }
-#     return render(request, "crm/lead_create.html", context)
