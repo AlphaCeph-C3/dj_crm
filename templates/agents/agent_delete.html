@@ -1,0 +1,11 @@
+{% extends "crm/base.html" %}
+{% block content %}
+  <a href="{% url 'agents:agent-list' %}">Go back to leads</a>
+  <hr/>
+  <h1>Are you sure you want to delete this Agent?</h1>
+  <form action="" method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Submit</button>
+  </form>
+{% endblock content %}

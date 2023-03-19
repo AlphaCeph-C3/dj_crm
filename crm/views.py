@@ -1,4 +1,5 @@
-from django.shortcuts import get_object_or_404, redirect, render
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.mail import send_mail
 from django.urls import reverse
 from django.views.generic import (
     CreateView,
@@ -9,101 +10,107 @@ from django.views.generic import (
     UpdateView,
 )
 
-from .forms import LeadModelForm
+from agents.mixins import OrganizerAndLoginRequiredMixin
+
+from .forms import CustomUserCreationForm, LeadModelForm
 from .models import Lead
 
 # Create your views here.
+
+
+class SignupView(CreateView):
+    template_name = "registration/signup.html"
+    form_class = CustomUserCreationForm
+
+    def get_success_url(self) -> str:
+        return reverse("login")
 
 
 class LandingPageView(TemplateView):
     template_name = "crm/landing.html"
 
 
-def landing_page(request):
-    context = {}
-    return render(request, "crm/landing.html", context=context)
-
-
-class LeadListView(ListView):
+class LeadListView(LoginRequiredMixin, ListView):
     template_name = "crm/lead_list.html"
-    queryset = Lead.objects.all()
     context_object_name = "leads"
 
+    def get_queryset(self):
+        user = self.request.user
+        # initial queryset of leads for the entire organization
+        if user.is_organizer:
+            queryset = Lead.objects.filter(organization=user.userprofile)
+        else:
+            queryset = Lead.objects.filter(organization=user.agent.organization)
+            # filter for the agent logged in
+            queryset = queryset.filter(agent__user=user)
+        return queryset
 
-def lead_list(request):
-    leads = Lead.objects.all()
-    context = {"leads": leads}
-    return render(request, "crm/lead_list.html", context=context)
 
-
-class LeadDetailView(DetailView):
+class LeadDetailView(LoginRequiredMixin, DetailView):
     template_name = "crm/lead_detail.html"
-    queryset = Lead.objects.all()
     context_object_name = "lead"
 
+    def get_queryset(self):
+        user = self.request.user
+        # initial queryset of leads for the entire organization
+        if user.is_organizer:
+            queryset = Lead.objects.filter(organization=user.userprofile)
+        else:
+            queryset = Lead.objects.filter(organization=user.agent.organization)
+            # filter for the agent logged in
+            queryset = queryset.filter(agent__user=user)
+        return queryset
 
-def lead_detail(request, pk):
-    lead = get_object_or_404(Lead, pk=pk)
-    context = {"lead": lead}
-    return render(request, "crm/lead_detail.html", context)
 
+class LeadCreateView(OrganizerAndLoginRequiredMixin, CreateView):
+    """Create a CBV with model form so that it is saved into the database directly when submitted through the webpage and deal with sending emails to either client leads or to created agents.
 
-class LeadCreateView(CreateView):
+    Args:
+        CreateView (generic views): django builtin view for creating database rows which is inherited by the current view.
+
+    Returns:
+        HTTPResponse: An HTTPResponse which renders a template on the browser.
+    """
+
     template_name = "crm/lead_create.html"
     form_class = LeadModelForm
 
     def get_success_url(self):
         return reverse("crm:home")
 
-
-def lead_create(request):
-    if request.method == "POST":
-        form = LeadModelForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect("crm:home")
-    else:
-        form = LeadModelForm()
-    context = {
-        "form": form,
-    }
-    return render(request, "crm/lead_create.html", context)
+    def form_valid(self, form):
+        # TODO: send email
+        send_mail(
+            subject="A Lead has been created.",
+            message="Go to the site to see the new lead.",
+            from_email="test@test.com",
+            recipient_list=["test2@test.com"],
+        )
+        return super(LeadCreateView, self).form_valid(form)
 
 
-class LeadUpdateView(UpdateView):
+class LeadUpdateView(OrganizerAndLoginRequiredMixin, UpdateView):
     template_name = "crm/lead_update.html"
-    queryset = Lead.objects.all()
     form_class = LeadModelForm
 
     def get_success_url(self):
         return reverse("crm:home")
 
-
-def lead_update(request, pk):
-    lead = Lead.objects.get(id=pk)
-    if request.method == "POST":
-        form = LeadModelForm(request.POST, instance=lead)
-        if form.is_valid():
-            form.save()
-            return redirect("crm:home")
-    else:
-        form = LeadModelForm(instance=lead)
-    context = {
-        "lead": lead,
-        "form": form,
-    }
-    return render(request, "crm/lead_update.html", context)
+    def get_queryset(self):
+        user = self.request.user
+        # initial queryset of leads for the entire organization
+        queryset = Lead.objects.filter(organization=user.userprofile)
+        return queryset
 
 
-class LeadDeleteView(DeleteView):
+class LeadDeleteView(OrganizerAndLoginRequiredMixin, DeleteView):
     template_name = "crm/lead_delete.html"
-    queryset = Lead.objects.all()
 
     def get_success_url(self) -> str:
         return reverse("crm:home")
 
-
-def lead_delete(request, pk):
-    lead = Lead.objects.get(id=pk)
-    lead.delete()
-    return redirect("crm:home")
+    def get_queryset(self):
+        user = self.request.user
+        # initial queryset of leads for the entire organization
+        queryset = Lead.objects.filter(organization=user.userprofile)
+        return queryset
