@@ -24,4 +24,17 @@ urlpatterns = [
         views.LeadCategoryUpdateView.as_view(),
         name="lead-category-update",
     ),
+    path(
+        "create/category/", views.CategoryCreateView.as_view(), name="category-create"
+    ),
+    path(
+        "update/<int:pk>/category/",
+        views.CategoryUpdateView.as_view(),
+        name="category-update",
+    ),
+    path(
+        "delete/<int:pk>/category",
+        views.CategoryDeleteView.as_view(),
+        name="category-delete",
+    ),
 ]

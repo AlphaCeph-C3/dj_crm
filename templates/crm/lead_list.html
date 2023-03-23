@@ -66,6 +66,8 @@
                            class="text-indigo-600 hover:text-indigo-900">Edit</a>
                       </td>
                     </tr>
+                  {% empty %}
+                    <p>There are currently no leads</p>
                   {% endfor %}
                 </tbody>
               </table>

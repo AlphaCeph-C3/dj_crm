@@ -17,6 +17,7 @@ from agents.mixins import OrganizerAndLoginRequiredMixin
 
 from .forms import (
     AssignAgentForm,
+    CategoryModelForm,
     CustomUserCreationForm,
     LeadCategoryUpdateForm,
     LeadModelForm,
@@ -237,3 +238,54 @@ class LeadCategoryUpdateView(LoginRequiredMixin, UpdateView):
 
     def get_success_url(self):
         return reverse("crm:lead-detail", kwargs={"pk": self.get_object().pk})
+
+
+class CategoryCreateView(OrganizerAndLoginRequiredMixin, CreateView):
+
+    template_name = "crm/category_create.html"
+    form_class = CategoryModelForm
+
+    def get_success_url(self):
+        return reverse("crm:category-list")
+
+    def form_valid(self, form):
+        category = form.save(commit=False)
+        category.organization = self.request.user.userprofile
+        category.save()
+        return super(CategoryCreateView, self).form_valid(form)
+
+
+class CategoryUpdateView(OrganizerAndLoginRequiredMixin, UpdateView):
+
+    template_name = "crm/category_update.html"
+    form_class = CategoryModelForm
+
+    def get_success_url(self):
+        return reverse("crm:category-list")
+
+    def get_queryset(self):
+        user = self.request.user
+        # initial queryset of leads for the entire organization
+        if user.is_organizer:
+            queryset = Category.objects.filter(organization=user.userprofile)
+        else:
+            queryset = Category.objects.filter(organization=user.agent.organization)
+
+        return queryset
+
+
+class CategoryDeleteView(OrganizerAndLoginRequiredMixin, DeleteView):
+    template_name = "crm/category_delete.html"
+
+    def get_success_url(self):
+        return reverse("crm:category-list")
+
+    def get_queryset(self):
+        user = self.request.user
+        # initial queryset of leads for the entire organization
+        if user.is_organizer:
+            queryset = Category.objects.filter(organization=user.userprofile)
+        else:
+            queryset = Category.objects.filter(organization=user.agent.organization)
+
+        return queryset

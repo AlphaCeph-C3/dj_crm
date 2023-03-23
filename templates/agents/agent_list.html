@@ -42,6 +42,8 @@
                            class="text-indigo-600 hover:text-indigo-900">Edit</a>
                       </td>
                     </tr>
+                  {% empty %}
+                    <p>There are currently no agents</p>
                   {% endfor %}
                 </tbody>
               </table>
