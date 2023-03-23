@@ -5,6 +5,8 @@ name = "pypi"
 
 [packages]
 django = "==4.1"
+django-crispy-forms = "*"
+crispy-tailwind = "*"
 
 [dev-packages]
 black = "*"

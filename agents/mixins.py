@@ -7,5 +7,5 @@ class OrganizerAndLoginRequiredMixin(AccessMixin):
 
     def dispatch(self, request, *args, **kwargs):
         if not request.user.is_authenticated or not request.user.is_organizer:
-            return redirect("crm:lead-list")
+            return redirect("crm:home")
         return super().dispatch(request, *args, **kwargs)

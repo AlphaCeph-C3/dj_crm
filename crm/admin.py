@@ -4,7 +4,7 @@ from django.contrib.auth.admin import UserAdmin
 from django.utils.translation import gettext_lazy as _
 
 from .forms import CustomUserChangeForm, CustomUserCreationForm
-from .models import Agent, Lead, UserProfile
+from .models import Agent, Category, Lead, UserProfile
 
 # Register your models here.
 User = get_user_model()
@@ -44,6 +44,7 @@ class CustomUserAdmin(UserAdmin):
 
 
 # admin.site.register(User, CustomUserAdmin)
+admin.site.register(Category)
 admin.site.register(Agent)
 admin.site.register(Lead)
 admin.site.register(UserProfile)

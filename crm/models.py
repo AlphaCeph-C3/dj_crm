@@ -35,6 +35,13 @@ class Lead(models.Model):
         null=True,
         blank=True,
     )
+    category = models.ForeignKey(
+        "Category",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="leads",
+    )
 
     def __str__(self) -> str:
         return f"{self.first_name} {self.last_name}"
@@ -47,4 +54,12 @@ class Agent(models.Model):
     organization = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
 
     def __str__(self) -> str:
-        return self.user.first_name
+        return f"{self.user.first_name} {self.user.last_name}"
+
+
+class Category(models.Model):
+    name = models.CharField(max_length=30)  # New, Contacted, Converted, Unconverted
+    organization = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.name
