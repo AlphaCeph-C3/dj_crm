@@ -27,6 +27,10 @@ class Lead(models.Model):
     first_name = models.CharField(_("First Name"), max_length=20)
     last_name = models.CharField(_("Last Name"), max_length=20)
     age = models.IntegerField(_("Age"), default=0)
+    description = models.TextField(_("Description"))
+    date_added = models.DateTimeField(auto_now_add=True)
+    phone_number = models.CharField(max_length=20)
+    email = models.EmailField(_("Email Address"), max_length=254)
     organization = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
     agent = models.ForeignKey(
         "Agent",
